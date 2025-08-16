@@ -1,5 +1,4 @@
 # 🏠 Bangalore Home Price Prediction
-
 A full-stack machine learning project to predict real estate prices in Bangalore, India, based on area (sqft), number of bedrooms (BHK), bathrooms, and location.
 
 This project includes:
@@ -100,3 +99,4 @@ Bangalore-Home-Price-Prediction/
 ├── README.md
 └── .gitignore
 
+### please go to this url in your browser to see the result >> https://github.com/user-attachments/assets/56fafb8e-f542-47a3-9e9f-c37b755693fe
