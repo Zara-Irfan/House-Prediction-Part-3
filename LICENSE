@@ -1,21 +1,71 @@
-MIT License
+### 📁 `client/app.js` (cleaned & commented)
 
-Copyright (c) 2025 Zara-Irfan
+```javascript
+// Fetch selected bathroom value
+function getBathValue() {
+    var uiBathrooms = document.getElementsByName("uiBathrooms");
+    for (var i = 0; i < uiBathrooms.length; i++) {
+        if (uiBathrooms[i].checked) {
+            return parseInt(uiBathrooms[i].value);
+        }
+    }
+    return -1; // No option selected
+}
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+// Fetch selected BHK value
+function getBHKValue() {
+    var uiBHK = document.getElementsByName("uiBHK");
+    for (var i = 0; i < uiBHK.length; i++) {
+        if (uiBHK[i].checked) {
+            return parseInt(uiBHK[i].value);
+        }
+    }
+    return -1; // No option selected
+}
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+// Estimate price when button clicked
+function onClickedEstimatePrice() {
+    var sqft = document.getElementById("uiSqft").value;
+    var bhk = getBHKValue();
+    var bathrooms = getBathValue();
+    var location = document.getElementById("uiLocations").value;
+    var estPrice = document.getElementById("uiEstimatedPrice");
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+    // Form validation
+    if (sqft === "" || bhk === -1 || bathrooms === -1 || location === "") {
+        estPrice.innerHTML = "<span style='color:red'>Please fill all fields!</span>";
+        return;
+    }
+
+    // Call Flask backend
+    $.post("http://127.0.0.1:5000/predict_home_price", {
+        total_sqft: parseFloat(sqft),
+        bhk: bhk,
+        bath: bathrooms,
+        location: location
+    }, function(data, status) {
+        estPrice.innerHTML = "<span>Estimated Price: <b>" + data.estimated_price + " Lakh</b></span>";
+    }).fail(function() {
+        estPrice.innerHTML = "<span style='color:red'>Error fetching price. Make sure Flask server is running.</span>";
+    });
+}
+
+// Populate locations dropdown on load
+function onPageLoad() {
+    $.get("http://127.0.0.1:5000/get_location_names")
+        .done(function(data) {
+            if (data && data.locations) {
+                var uiLocations = document.getElementById("uiLocations");
+                uiLocations.innerHTML = '<option value="" disabled selected>Choose a Location</option>';
+                for (var i = 0; i < data.locations.length; i++) {
+                    var opt = new Option(data.locations[i], data.locations[i]);
+                    uiLocations.appendChild(opt);
+                }
+            }
+        })
+        .fail(function() {
+            alert("Cannot fetch list of locations! Make sure Flask server is running.");
+        });
+}
+
+window.onload = onPageLoad;
